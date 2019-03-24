@@ -14,12 +14,12 @@ namespace Plan2net\Sierrha\Error;
  * LICENSE.txt file that was distributed with this source code.
  */
 
+use Plan2net\Sierrha\Utility\Url;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Controller\ErrorPageController;
-use TYPO3\CMS\Core\Error\PageErrorHandler\PageErrorHandlerInterface;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\RedirectResponse;
@@ -32,6 +32,7 @@ use TYPO3\CMS\Frontend\Page\PageAccessFailureReasons;
  * An error handler that redirects to a login page.
  *
  * Class StatusForbiddenHandler
+ *
  * @package Plan2net\Sierrha\Error
  */
 class StatusForbiddenHandler extends BaseHandler
@@ -92,7 +93,8 @@ class StatusForbiddenHandler extends BaseHandler
                     throw new ImmediateResponseException($response);
                 }
                 $resolvedUrl = $this->resolveUrl($request, $this->handlerConfiguration['tx_sierrha_noPermissionsContentSource']);
-                $response = new HtmlResponse($this->fetchUrl($resolvedUrl, 'noPermissionsTitle', 'noPermissionsDetails'));
+                $urlUtility = GeneralUtility::makeInstance(Url::class);
+                $response = new HtmlResponse($urlUtility->fetchWithFallback($resolvedUrl, 'noPermissionsTitle', 'noPermissionsDetails'));
             } else {
                 $resolvedUrl = $this->resolveUrl($request, $this->handlerConfiguration['tx_sierrha_loginPage']);
                 $requestUri = (string)$request->getUri();
@@ -101,7 +103,7 @@ class StatusForbiddenHandler extends BaseHandler
                     [rawurlencode($requestUri), rawurlencode(base64_encode($requestUri))],
                     $this->handlerConfiguration['tx_sierrha_loginUrlParameter']
                 );
-                $response = new RedirectResponse($resolvedUrl . (strpos($resolvedUrl, '?') === false ? '?' : '&') . $loginParameters);
+                $response = new RedirectResponse($resolvedUrl.(strpos($resolvedUrl, '?') === false ? '?' : '&').$loginParameters);
             }
         } catch (ImmediateResponseException $e) {
             throw $e;
