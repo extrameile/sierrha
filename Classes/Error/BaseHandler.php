@@ -17,7 +17,6 @@ namespace Plan2net\Sierrha\Error;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Error\PageErrorHandler\PageErrorHandlerInterface;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
-use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -26,26 +25,28 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 /**
  * A foundation class for error handlers.
  */
-abstract class BaseHandler implements PageErrorHandlerInterface {
+abstract class BaseHandler implements PageErrorHandlerInterface
+{
 
-	/**
-	 * @var int
-	 */
-	protected $statusCode;
+    /**
+     * @var int
+     */
+    protected $statusCode;
 
-	/**
-	 * @var array
-	 */
-	protected $handlerConfiguration;
+    /**
+     * @var array
+     */
+    protected $handlerConfiguration;
 
-	/**
-	 * @param int $statusCode
-	 * @param array $configuration
-	 */
-	public function __construct(int $statusCode, array $configuration) {
-		$this->statusCode = $statusCode;
-		$this->handlerConfiguration = $configuration;
-	}
+    /**
+     * @param int   $statusCode
+     * @param array $configuration
+     */
+    public function __construct(int $statusCode, array $configuration)
+    {
+        $this->statusCode = $statusCode;
+        $this->handlerConfiguration = $configuration;
+    }
 
     /**
      * Resolve TYPO3 style URL into real world URL, replace language markers for external URL
@@ -84,42 +85,5 @@ abstract class BaseHandler implements PageErrorHandlerInterface {
             (int)$urlParams['pageuid'],
             ['_language' => $request->getAttribute('language', null)]
         );
-    }
-
-    /**
-     * Fetch content of URL
-     * 
-     * @param string $url
-     * @return string
-     */
-    protected function fetchUrl(string $url, string $labelTitle, string $labelDetails): string
-    {
-        $content = GeneralUtility::getUrl($url);
-        if ($content === false) {
-            // @todo add error logging
-            $content = '';
-        } elseif (trim(strip_tags($content)) === '') {
-            // an empty message is considered an error 
-            // @todo add error logging
-            $content = '';
-        }
-
-        if ($content === '') {
-            $languageService = $this->getLanguageService();
-            $content = GeneralUtility::makeInstance(ErrorPageController::class)->errorAction(
-                $languageService->sL('LLL:EXT:sierrha/Resources/Private/Language/locallang.xlf:' . $labelTitle),
-                $languageService->sL('LLL:EXT:sierrha/Resources/Private/Language/locallang.xlf:' . $labelDetails)
-            );
-        }
-
-        return $content;
-    }
-
-    /**
-     * @return LanguageService
-     */
-    protected function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'] ?? GeneralUtility::makeInstance(LanguageService::class);
     }
 }
