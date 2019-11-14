@@ -69,9 +69,9 @@ class StatusNotFoundHandler extends BaseHandler
                     $e->getCode()
                 );
                 throw new ImmediateResponseException(new HtmlResponse($content, 500));
-            } else {
-                throw $e;
             }
+
+            throw $e;
         }
 
         return new HtmlResponse($content, $this->statusCode);
